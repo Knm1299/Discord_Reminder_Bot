@@ -15,6 +15,7 @@ const keyphrase = "Good morning @everyone ! The topics that will be covered in t
 client.once('ready', () => {
     setInterval(checkIn, 60000, client);
     //TODO: set up channel list + add/remove channel commands for posting
+    // made a change
     
 	console.log('Ready!');
 });
