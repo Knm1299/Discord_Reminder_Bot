@@ -1,10 +1,10 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const fs = require('node:fs');
 let config = JSON.parse(fs.readFileSync('./config.json'));
-const siteNames = Object.keys(config.sites);
+const channelNames = Object.keys(config.channels);
 let choiceArr = new Array();
-for(let i = 0 ; i<siteNames.length; i++){
-    choiceArr[i] = [siteNames[i], siteNames[i]];
+for(let i = 0 ; i<channelNames.length; i++){
+    choiceArr[i] = [channelNames[i], channelNames[i]];
 }
 
 
