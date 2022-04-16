@@ -23,14 +23,22 @@ function parseMessage(type, message)
 {
     console.log("Set Reminders: ");
     let csv = message.attachments.first();
+    if(!csv)return;
     let csvArr;
     
     const req = https.request(csv.url, res => {
         console.log(`Status Code: ${res.statusCode}`)
+        let fullString = "";
 
         res.on('data', d => {
-            csvArr = csvStringToArray(d);
-            setReminders(type,csvArr);
+            fullString += d;
+        })
+
+        res.on('end',()=>{
+            if(res.complete){
+                csvArr = csvStringToArray(fullString);
+                setReminders(type, csvArr);
+            }
         })
     })
 
@@ -46,15 +54,17 @@ function checkIn(client)
 {
     //reload config to ensure channel add/remove is respected
     config = JSON.parse(fs.readFileSync('./config.json'));
-    if(!config.remindersActive)return;
 
     const curTime = Date.now();
 
     
-    //trigger weekly announcement at 10AM Monday
+    //trigger weekly announcement at 10AM Monday, feel free to make a pull req if you can improve this
     let nowString = new Date(curTime).toLocaleString('en-US',{dateStyle:'full',timeStyle:'short',timeZone:'America/New_York'}).match(/(Monday)|(10:00 AM)/gi);
     let weeklyFlag = config.weekliesActive && nowString != null && nowString.length == 2;
     if(weeklyFlag) weeklySummary(client);
+    
+    //checking if reminders are active before continuing
+    if(!config.remindersActive)return;
 
     //array of changes to prevent mutation issues
     let changes = [];
@@ -69,6 +79,7 @@ function checkIn(client)
             {
                 for(channelId of config.channels[r.typeName])
                 {
+                    if(config.contentBlacklist[channelId].includes(r.content.toUpperCase()))continue;
                     console.debug("Reminder posting at: " + new Date(curTime));
                     client.channels.fetch(channelId).then(
                         foundChannel =>{
@@ -122,19 +133,22 @@ function setReminders(type,lineArr)
         let content2 = line[5];
         let link = config.sites[type];
 
-        reminders.push({
+        let reminder1 = {
             "typeName":type,
             "link":link,
             "time":date1,
             "content":content1
-        })
-
-        if(date2 != date && content2)reminders.push({
+        }
+        let reminder2 = {
             "typeName":type,
             "link":link,
             "time":date2,
             "content":content2
-        })
+        }
+
+        if(!reminders.find(r=>{return r.time==reminder1.time}))reminders.push(reminder1);  
+
+        if(date2 && date2 != date && !reminders.find(r=>{return r.time==reminder2.time}))reminders.push(reminder2);
 
     }
     //write to file
@@ -192,21 +206,28 @@ function weeklySummary(client)
 {
     let weeklies = {};
 
+    //setting up arrays per channel of reminders due within 7 days, excluding blacklist
     for(let r of reminders)
     {
         //the hard coded number is the number of millis in 7 days
         if(r.time - Date.now() > 604800000)continue;
         for(let channel of config.channels[r.typeName +"Announce"])
         {
+            //checking blacklist
+            if(config.contentBlacklist[channel].includes(r.content.toUpperCase()))continue;
             (weeklies.hasOwnProperty(channel))? weeklies[channel].push(r) : weeklies[channel] = [r];
         }
     }
-    console.debug("Registered servers: " + Object.entries(weeklies).length);
 
+    //sets up array of days, then sends schedule
     for(let [s,rs] of Object.entries(weeklies))
     {
+        //sorting by time to ensure each day is ordered
         rs.sort((a,b)=>{return(a.time - b.time);})
+        
+        //message header
         let message = "@everyone All study groups for the week of: " + new Date().toLocaleDateString('en-US',{dateStyle:"full"}) + ": \n";
+
         let days = [[],[],[],[],[],[],[]];
         for(let day = 1; day < 8;  day++)
         {
@@ -214,7 +235,10 @@ function weeklySummary(client)
             let changes = [];
             for(let [i,r] of rs.entries())
             {
-                if(r.time-(day*86400000) < Date.now())
+                //temp date to check from last midnight
+                let tempDate = new Date();
+                tempDate.setHours(0,0,0,0);
+                if(r.time-(day*86400000) < tempDate.getTime())
                 {
                     days[day-1].push(r);
                     changes.push(i);

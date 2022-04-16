@@ -26,8 +26,9 @@ module.exports = {
             interaction.reply({content:'Channel already registered', ephemeral:true});
         }else{
             config.channels[interaction.options.data[0].value].push(interaction.channelId);
+            if(!config.contentBlacklist.hasOwnProperty(interaction.channelId)) config.contentBlacklist[interaction.channelId] = [];
             fs.writeFileSync('./config.json', JSON.stringify(config));
-            interaction.reply({content:"Channel registered!", ephemeral:true});
+            interaction.reply({content:"Channel registered! Remember to use the appropriate command to add topics that you don't want posted here!", ephemeral:true});
         }
     }
 }
