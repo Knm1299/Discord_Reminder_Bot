@@ -15,10 +15,12 @@ module.exports = {
 //array to hold active reminders
 let reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
 
-//time in advance to notify, in milliseconds
-const millisInAdvance = 900000;
-
-//This function blocks, room for improvement
+/**
+ * Parses a message that consists of a command phrase and a csv with the schedule to set
+ * 
+ * @param {String} type Name of the program the reminder belongs to
+ * @param {Message} message the message object to parse
+ */
 function parseMessage(type, message)
 {
     console.log("Set Reminders: ");
@@ -49,7 +51,11 @@ function parseMessage(type, message)
     req.end()
 }
 
-//runs once every minute, sends announcement if a reminder is due
+/**
+ * meant to be run periodically, sends announcement if a reminder is due within specified time
+ * 
+ * @param {Client} client the active client to send the message with
+ */
 function checkIn(client)
 {
     //reload config to ensure channel add/remove is respected
@@ -75,7 +81,7 @@ function checkIn(client)
     {
         if (r.time != null && curTime < r.time)
         {
-            if(r.time - curTime <= millisInAdvance)
+            if(r.time - curTime <= config.timeInAdvance)
             {
                 for(channelId of config.channels[r.typeName])
                 {
@@ -102,13 +108,13 @@ function checkIn(client)
                     )
                     .catch(console.error);
                 }
-                console.debug("checkIn removing posted entry at " + new Date(curTime));
+                console.debug("removing posted entry at " + new Date(curTime));
                 changes.push(i);
             }
 
         }else
         {
-            console.debug("checkIn pruning entry at " + new Date(curTime));
+            console.debug("pruning entry at " + new Date(curTime));
             changes.push(i);
         }
     }
@@ -155,7 +161,7 @@ function setReminders(type,lineArr)
     fs.writeFileSync('./schedule.json', JSON.stringify({"reminders":reminders}));
 }
 
-//Shamelessly stolen csv parser, outputs a 2d array
+//csv parser, outputs a 2d array
 /**@returns 2d array of csv entries @param strData csv content as a string */
 const csvStringToArray = strData =>{
     const objPattern = new RegExp(("(\\,|\\r?\\n|\\r|^)(?:\"([^\"]*(?:\"\"[^\"]*)*)\"|([^\\,\\r\\n]*))"),"gi");
@@ -176,8 +182,8 @@ const csvStringToArray = strData =>{
 
     @returns the date object with set hour and minute, null if invalid time
 
-    @param date date object to set time of
-    @param time string starting with hh:mm PM/AM, minutes are optional, case insensitive
+    @param {Date}date date object to set time of
+    @param {string}time string starting with hh:mm PM/AM, minutes are optional, case insensitive
 **/
 function parseTime(date, time)
 {
@@ -200,7 +206,7 @@ function parseTime(date, time)
 /**
  * Sends weekly summary to each registered channel with all pertinent reminders
  * 
- * @param client the client object to send the message with
+ * @param {Client}client the client object to send the message with
  * **/
 function weeklySummary(client)
 {
@@ -256,7 +262,7 @@ function weeklySummary(client)
             if(day.length > 0)message += "```fix\n" + new Date(Date.now()+((dayI)*86400000)).toLocaleDateString('en-US',{dateStyle:'full'}) + " ```\n";
             for(let r of day)
             {
-                message += new Date(r.time).toLocaleTimeString('en-US',{timeStyle:"short", timeZone:'America/New_York'}) + ": " + r.typeName + " Study Group on: " + r.content + "\n";
+                message += new Date(r.time).toLocaleTimeString('en-US',{timeStyle:"short", timeZone:'America/New_York'}) + ": " + r.typeName + " Study Group - " + r.content + "\n";
             }
         }
         

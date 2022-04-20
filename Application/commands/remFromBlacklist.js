@@ -15,7 +15,7 @@ module.exports = {
         let config = JSON.parse(fs.readFileSync('./config.json'));
 
         if(config.contentBlacklist[interaction.channelId].includes(interaction.options.data[0].value.toUpperCase())){
-            config.contentBlacklist[interaction.channelId].push(interaction.options.data[0].value.toUpperCase());
+            config.contentBlacklist[interaction.channelId].splice(config.contentBlacklist[interaction.channelId].indexOf(interaction.options.data[0].value.toUpperCase()),1);
             fs.writeFileSync('./config.json', JSON.stringify(config));
             interaction.reply({content:"Content reinstated! Reminders containing that phrase will once again be posted", ephemeral:true});
         }else{
