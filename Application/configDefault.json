@@ -12,20 +12,12 @@
         ],
         "RAPAnnounce": [],
         "RevUP": [
-            "953340419469639685",
-            "948671908558282812"
+            "953340419469639685"
         ],
         "RAP": []
     },
     "contentBlacklist": {
         "953340419469639685": [
-            "SIMILAR TO PROGRESS CHECK",
-            "NO STUDY GROUP"
-        ],
-        "948671908558282812": [
-            "NO STUDY GROUP",
-            "HELP DAY",
-            "ACTIVITY SIMILAR TO PROGRESS CHECK"
         ]
     }
 }
