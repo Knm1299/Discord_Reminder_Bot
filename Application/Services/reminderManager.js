@@ -2,7 +2,9 @@ const {Client, Collection} = require('discord.js');
 const dotenv = require('dotenv');
 const https = require('https');
 const fs = require('node:fs');
-let config = JSON.parse(fs.readFileSync('./config.json'));
+let configMan = require('../services/configManager');
+let config = configMan.config;
+
 
 dotenv.config();
 
@@ -12,7 +14,7 @@ module.exports = {
     weeklySummary
 }
 
-//array to hold active reminders
+//array to hold active reminders TODO: move this literally anywhere but top level
 let reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
 
 /**
@@ -59,7 +61,7 @@ function parseMessage(type, message)
 function checkIn(client)
 {
     //reload config to ensure channel add/remove is respected
-    config = JSON.parse(fs.readFileSync('./config.json'));
+    config = configMan.readConfig();
 
     const curTime = Date.now();
 
@@ -77,6 +79,7 @@ function checkIn(client)
     
     //iterate through array, if reminder is due, post reminder and remove from array
     //if past due, remove from array and log
+    //TODO: you can't really leave this mess for others to have to look at
     for(const [i,r] of reminders.entries())
     {
         if (r.time != null && curTime < r.time)
@@ -86,7 +89,7 @@ function checkIn(client)
                 for(channelId of config.channels[r.typeName])
                 {
                     if(config.contentBlacklist[channelId].includes(r.content.toUpperCase()))continue;
-                    console.debug("Reminder posting at: " + new Date(curTime));
+                    console.debug("Reminder posting at: " + new Date());
                     client.channels.fetch(channelId).then(
                         foundChannel =>{
                             if(r.content != "No Study Group")
@@ -108,13 +111,13 @@ function checkIn(client)
                     )
                     .catch(console.error);
                 }
-                console.debug("removing posted entry at " + new Date(curTime));
+                console.debug("removing posted entry at " + new Date());
                 changes.push(i);
             }
 
         }else
         {
-            console.debug("pruning entry at " + new Date(curTime));
+            console.debug("pruning entry at " + new Date());
             changes.push(i);
         }
     }
