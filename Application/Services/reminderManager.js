@@ -82,42 +82,38 @@ function checkIn(client)
     //TODO: you can't really leave this mess for others to have to look at
     for(const [i,r] of reminders.entries())
     {
-        if (r.time != null && curTime < r.time)
-        {
-            if(r.time - curTime <= config.timeInAdvance)
-            {
-                for(channelId of config.channels[r.typeName])
-                {
-                    if(config.contentBlacklist[channelId].includes(r.content.toUpperCase()))continue;
-                    console.debug("Reminder posting at: " + new Date());
-                    client.channels.fetch(channelId).then(
-                        foundChannel =>{
-                            if(r.content != "No Study Group")
-                            {
-                                foundChannel.send(
-                                    "@everyone Dont forget! There is a " + r.typeName +
-                                    " study group at " +  new Date(r.time).toLocaleTimeString("en-US",{"timeStyle":"short","timeZone":'America/New_York'}) +
-                                    "!\n" +
-                                    "Today's topic: " + r.content + "\n" +
-                                    "Registration link: " + r.link
-                                )
-                                .catch(console.error);
-                            }else
-                            {
-                                foundChannel.send("No " + new Date(r.time).toLocaleTimeString("en-US",{"timeStyle":"short","timeZone":'America/New_York'}) +
-                                " Study group today!").catch(console.error);
-                            }
-                        }
-                    )
-                    .catch(console.error);
-                }
-                console.debug("removing posted entry at " + new Date());
-                changes.push(i);
-            }
-
-        }else
+        if (r.time == null || curTime >= r.time)
         {
             console.debug("pruning entry at " + new Date());
+            changes.push(i);
+            continue;
+        }
+        if(r.time - curTime <= config.timeInAdvance)
+        {
+            for(channelId of config.channels[r.typeName])
+            {
+                if(config.contentBlacklist[channelId].includes(r.content.toUpperCase()))continue;
+                console.debug("Reminder posting at: " + new Date());
+                client.channels.fetch(channelId).then(foundChannel =>{
+                    if(r.content != "No Study Group")
+                    {
+                        foundChannel.send(
+                            "@everyone Dont forget! There is a " + r.typeName +
+                            " study group at " +  new Date(r.time).toLocaleTimeString("en-US",{"timeStyle":"short","timeZone":'America/New_York'}) +
+                            "!\n" +
+                            "Today's topic: " + r.content + "\n" +
+                            "Registration link: " + r.link
+                        ).catch(console.error);
+                    }else
+                    {
+                        foundChannel.send(
+                            "No " + new Date(r.time).toLocaleTimeString("en-US",{"timeStyle":"short","timeZone":'America/New_York'}) +
+                            " Study group today!"
+                        ).catch(console.error);
+                    }
+                }).catch(console.error);
+            }
+            console.debug("removing posted entry at " + new Date());
             changes.push(i);
         }
     }
