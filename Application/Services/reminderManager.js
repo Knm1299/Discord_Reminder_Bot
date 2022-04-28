@@ -135,12 +135,12 @@ function setReminders(type,lineArr)
     for(line of lineArr)
     {
         let date = Date.parse(line[0]);
-        if(!date)continue;//skips line if first entry not valid date
+        if(!date)continue;
         let date1 = parseTime(date, line[1]);
         let date2 = parseTime(date, line[4]);
         let content1 = line[2];
         let content2 = line[5];
-        let link = config.sites[type];
+        let link = config.regLinks[type];
 
         let reminder1 = {
             "typeName":type,
