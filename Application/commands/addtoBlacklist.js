@@ -15,10 +15,10 @@ module.exports = {
     async execute(interaction){
         let config = configMan.readConfig();
 
-        if(config.contentBlacklist[interaction.channelId].includes(interaction.options.data[0].value.toUpperCase())){
+        if(config.channels[interaction.channelId].blacklist.includes(interaction.options.data[0].value.toUpperCase())){
             interaction.reply({content:'Content already blacklisted', ephemeral:true});
         }else{
-            config.contentBlacklist[interaction.channelId].push(interaction.options.data[0].value.toUpperCase());
+            config.channels[interaction.channelId].blacklist.push(interaction.options.data[0].value.toUpperCase());
             configMan.writeConfig(config);
             interaction.reply({content:"Content blacklisted! Reminders containing that phrase will no longer be posted!", ephemeral:true});
         }

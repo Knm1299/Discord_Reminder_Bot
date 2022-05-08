@@ -60,6 +60,9 @@ function parseMessage(type, message)
  */
 function checkIn(client)
 {
+    //checking if reminders are active before continuing
+    if(!config.remindersActive)return;
+
     //reload config to ensure channel add/remove is respected
     config = configMan.readConfig();
 
@@ -68,11 +71,9 @@ function checkIn(client)
     
     //trigger weekly announcement at 10AM Monday, feel free to make a pull req if you can improve this
     let nowString = new Date(curTime).toLocaleString('en-US',{dateStyle:'full',timeStyle:'short',timeZone:'America/New_York'}).match(/(Monday)|(10:00 AM)/gi);
-    let weeklyFlag = config.weekliesActive && nowString != null && nowString.length == 2;
+    let weeklyFlag =  nowString != null && nowString.length == 2;
     if(weeklyFlag) weeklySummary(client);
     
-    //checking if reminders are active before continuing
-    if(!config.remindersActive)return;
 
     //array of changes to prevent mutation issues
     let changes = [];
@@ -90,9 +91,10 @@ function checkIn(client)
         }
         if(r.time - curTime <= config.timeInAdvance)
         {
-            for(channelId of config.channels[r.typeName])
+            for(const [channelId, channelObj] of Object.entries(config.channels))
             {
-                if(config.contentBlacklist[channelId].includes(r.content.toUpperCase()))continue;
+                if(!channelObj[r.typeName].individuals)continue;
+                if(channelObj.blacklist.includes(r.content.toUpperCase()))continue;
                 console.debug("Reminder posting at: " + new Date());
                 client.channels.fetch(channelId).then(foundChannel =>{
                     if(r.content != "No Study Group")
@@ -216,11 +218,11 @@ function weeklySummary(client)
     {
         //the hard coded number is the number of millis in 7 days
         if(r.time - Date.now() > 604800000)continue;
-        for(let channel of config.channels[r.typeName +"Announce"])
+        for(const [channelId, channelObj] of Object.entries(config.channels))
         {
-            //checking blacklist
-            if(config.contentBlacklist[channel].includes(r.content.toUpperCase()))continue;
-            (weeklies.hasOwnProperty(channel))? weeklies[channel].push(r) : weeklies[channel] = [r];
+            if(!channelObj[r.typeName].weeklies)continue;
+            if(channelObj.blacklist.includes(r.content.toUpperCase()))continue;
+            (weeklies.hasOwnProperty(channelId))? weeklies[channelId].push(r) : weeklies[channelId] = [r];
         }
     }
 
