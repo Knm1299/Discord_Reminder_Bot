@@ -211,6 +211,8 @@ function parseTime(date, time)
  * **/
 function weeklySummary(client)
 {
+    //reload config
+    config = configMan.config;
     let weeklies = {};
 
     //setting up arrays per channel of reminders due within 7 days, excluding blacklist
