@@ -2,7 +2,9 @@ const {Client, Collection} = require('discord.js');
 const dotenv = require('dotenv');
 const https = require('https');
 const fs = require('node:fs');
-let config = JSON.parse(fs.readFileSync('./config.json'));
+let configMan = require('../services/configManager');
+let config = configMan.config;
+
 
 dotenv.config();
 
@@ -12,7 +14,7 @@ module.exports = {
     weeklySummary
 }
 
-//array to hold active reminders
+//array to hold active reminders TODO: move this literally anywhere but top level
 let reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
 
 /**
@@ -58,63 +60,62 @@ function parseMessage(type, message)
  */
 function checkIn(client)
 {
+    //checking if reminders are active before continuing
+    if(!config.remindersActive)return;
+
     //reload config to ensure channel add/remove is respected
-    config = JSON.parse(fs.readFileSync('./config.json'));
+    config = configMan.readConfig();
 
     const curTime = Date.now();
 
     
     //trigger weekly announcement at 10AM Monday, feel free to make a pull req if you can improve this
     let nowString = new Date(curTime).toLocaleString('en-US',{dateStyle:'full',timeStyle:'short',timeZone:'America/New_York'}).match(/(Monday)|(10:00 AM)/gi);
-    let weeklyFlag = config.weekliesActive && nowString != null && nowString.length == 2;
+    let weeklyFlag =  nowString != null && nowString.length == 2;
     if(weeklyFlag) weeklySummary(client);
     
-    //checking if reminders are active before continuing
-    if(!config.remindersActive)return;
 
     //array of changes to prevent mutation issues
     let changes = [];
     
     //iterate through array, if reminder is due, post reminder and remove from array
     //if past due, remove from array and log
+    //TODO: you can't really leave this mess for others to have to look at
     for(const [i,r] of reminders.entries())
     {
-        if (r.time != null && curTime < r.time)
+        if (r.time == null || curTime >= r.time)
         {
-            if(r.time - curTime <= config.timeInAdvance)
+            console.debug("pruning entry at " + new Date());
+            changes.push(i);
+            continue;
+        }
+        if(r.time - curTime <= config.timeInAdvance)
+        {
+            for(const [channelId, channelObj] of Object.entries(config.channels))
             {
-                for(channelId of config.channels[r.typeName])
-                {
-                    if(config.contentBlacklist[channelId].includes(r.content.toUpperCase()))continue;
-                    console.debug("Reminder posting at: " + new Date(curTime));
-                    client.channels.fetch(channelId).then(
-                        foundChannel =>{
-                            if(r.content != "No Study Group")
-                            {
-                                foundChannel.send(
-                                    "@everyone Dont forget! There is a " + r.typeName +
-                                    " study group at " +  new Date(r.time).toLocaleTimeString("en-US",{"timeStyle":"short","timeZone":'America/New_York'}) +
-                                    "!\n" +
-                                    "Today's topic: " + r.content + "\n" +
-                                    "Registration link: " + r.link
-                                )
-                                .catch(console.error);
-                            }else
-                            {
-                                foundChannel.send("No " + new Date(r.time).toLocaleTimeString("en-US",{"timeStyle":"short","timeZone":'America/New_York'}) +
-                                " Study group today!").catch(console.error);
-                            }
-                        }
-                    )
-                    .catch(console.error);
-                }
-                console.debug("removing posted entry at " + new Date(curTime));
-                changes.push(i);
+                if(!channelObj[r.typeName].individuals)continue;
+                if(channelObj.blacklist.includes(r.content.toUpperCase()))continue;
+                console.debug("Reminder posting at: " + new Date());
+                client.channels.fetch(channelId).then(foundChannel =>{
+                    if(r.content != "No Study Group")
+                    {
+                        foundChannel.send(
+                            "@everyone Dont forget! There is a " + r.typeName +
+                            " study group at " +  new Date(r.time).toLocaleTimeString("en-US",{"timeStyle":"short","timeZone":'America/New_York'}) +
+                            "!\n" +
+                            "Today's topic: " + r.content + "\n" +
+                            "Registration link: " + r.link
+                        ).catch(console.error);
+                    }else
+                    {
+                        foundChannel.send(
+                            "No " + new Date(r.time).toLocaleTimeString("en-US",{"timeStyle":"short","timeZone":'America/New_York'}) +
+                            " Study group today!"
+                        ).catch(console.error);
+                    }
+                }).catch(console.error);
             }
-
-        }else
-        {
-            console.debug("pruning entry at " + new Date(curTime));
+            console.debug("removing posted entry at " + new Date());
             changes.push(i);
         }
     }
@@ -132,12 +133,12 @@ function setReminders(type,lineArr)
     for(line of lineArr)
     {
         let date = Date.parse(line[0]);
-        if(!date)continue;//skips line if first entry not valid date
+        if(!date)continue;
         let date1 = parseTime(date, line[1]);
         let date2 = parseTime(date, line[4]);
         let content1 = line[2];
         let content2 = line[5];
-        let link = config.sites[type];
+        let link = config.regLinks[type];
 
         let reminder1 = {
             "typeName":type,
@@ -210,6 +211,8 @@ function parseTime(date, time)
  * **/
 function weeklySummary(client)
 {
+    //reload config
+    config = configMan.config;
     let weeklies = {};
 
     //setting up arrays per channel of reminders due within 7 days, excluding blacklist
@@ -217,11 +220,11 @@ function weeklySummary(client)
     {
         //the hard coded number is the number of millis in 7 days
         if(r.time - Date.now() > 604800000)continue;
-        for(let channel of config.channels[r.typeName +"Announce"])
+        for(const [channelId, channelObj] of Object.entries(config.channels))
         {
-            //checking blacklist
-            if(config.contentBlacklist[channel].includes(r.content.toUpperCase()))continue;
-            (weeklies.hasOwnProperty(channel))? weeklies[channel].push(r) : weeklies[channel] = [r];
+            if(!channelObj[r.typeName].weeklies)continue;
+            if(channelObj.blacklist.includes(r.content.toUpperCase()))continue;
+            (weeklies.hasOwnProperty(channelId))? weeklies[channelId].push(r) : weeklies[channelId] = [r];
         }
     }
 

@@ -5,7 +5,6 @@ const { Routes } = require('discord-api-types/v9');
 const dotenv = require('dotenv');
 dotenv.config();
 const token = process.env.DISCORD_TOKEN;
-// const guildId = process.env.GUILD_ID;//THIS REGISTERS TO TEST SERVER
 const clientId = process.env.BOT_ID;
 
 

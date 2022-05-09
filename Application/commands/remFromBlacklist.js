@@ -1,6 +1,8 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const fs = require('node:fs');
-let config = JSON.parse(fs.readFileSync('./config.json'));
+const configMan = require('../services/configManager');
+
+let config = configMan.config;
 
 
 module.exports = {
@@ -11,12 +13,11 @@ module.exports = {
             .setDescription('The content to re-allow')
             .setRequired(true)),
     async execute(interaction){
-        //reloading file first, NOTE: this is synchronous, so at large file sizes, may block
-        let config = JSON.parse(fs.readFileSync('./config.json'));
+        let config = configMan.readConfig()
 
-        if(config.contentBlacklist[interaction.channelId].includes(interaction.options.data[0].value.toUpperCase())){
-            config.contentBlacklist[interaction.channelId].splice(config.contentBlacklist[interaction.channelId].indexOf(interaction.options.data[0].value.toUpperCase()),1);
-            fs.writeFileSync('./config.json', JSON.stringify(config));
+        if(config.channels[interaction.channelId].blacklist.includes(interaction.options.data[0].value.toUpperCase())){
+            config.channels[interaction.channelId].blacklist.splice(config.channels[interaction.channelId].blacklist.indexOf(interaction.options.data[0].value.toUpperCase()),1);
+            configMan.writeConfig();
             interaction.reply({content:"Content reinstated! Reminders containing that phrase will once again be posted", ephemeral:true});
         }else{
             interaction.reply({content:'Content not blacklisted', ephemeral:true});

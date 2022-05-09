@@ -104,3 +104,4 @@ dist
 .tern-port
 .vscode/launch.json
 Application/schedule.json
+Application/config/config.json

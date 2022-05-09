@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const { Client, Collection, Intents } = require('discord.js');
-const { parseMessage, checkIn } = require('./reminderManager.js');//why isn't this a class you ask? Ion
+const { parseMessage, checkIn } = require('./services/reminderManager.js');
 const dotenv = require('dotenv');
 
 //dotenv config for gitignored constants
