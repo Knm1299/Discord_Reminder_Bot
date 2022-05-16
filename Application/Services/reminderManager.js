@@ -11,7 +11,8 @@ dotenv.config();
 module.exports = {
     parseMessage,
     checkIn,
-    weeklySummary
+    weeklySummary,
+    addReminder
 }
 
 //array to hold active reminders TODO: move this literally anywhere but top level
@@ -60,6 +61,8 @@ function parseMessage(type, message)
  */
 function checkIn(client)
 {
+    //loading reminders to account for more ways to add them
+    reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
     //checking if reminders are active before continuing
     if(!config.remindersActive)return;
 
@@ -97,7 +100,7 @@ function checkIn(client)
                 if(channelObj.blacklist.includes(r.content.toUpperCase()))continue;
                 console.debug("Reminder posting at: " + new Date());
                 client.channels.fetch(channelId).then(foundChannel =>{
-                    if(r.content != "No Study Group")
+                    if(r.link)
                     {
                         foundChannel.send(
                             "@everyone Dont forget! There is a " + r.typeName +
@@ -106,12 +109,8 @@ function checkIn(client)
                             "Today's topic: " + r.content + "\n" +
                             "Registration link: " + r.link
                         ).catch(console.error);
-                    }else
-                    {
-                        foundChannel.send(
-                            "No " + new Date(r.time).toLocaleTimeString("en-US",{"timeStyle":"short","timeZone":'America/New_York'}) +
-                            " Study group today!"
-                        ).catch(console.error);
+                    }else{
+                        foundChannel.send(r.content).catch(console.error);
                     }
                 }).catch(console.error);
             }
@@ -130,6 +129,8 @@ function checkIn(client)
 //Sets reminders in local array, also writes to file
 function setReminders(type,lineArr)
 {
+    //loading reminders to account for more ways to add them
+    reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
     for(line of lineArr)
     {
         let date = Date.parse(line[0]);
@@ -158,6 +159,28 @@ function setReminders(type,lineArr)
         if(date2 && date2 != date && !reminders.find(r=>{return r.time==reminder2.time}))reminders.push(reminder2);
 
     }
+    //write to file
+    fs.writeFileSync('./schedule.json', JSON.stringify({"reminders":reminders}));
+}
+
+/**
+ * Schedules a reminder with custom content, doesn't use regular "Dont forget!" format
+ * @param {String} type The groupname for sending the reminder out
+ * @param {String} date The dateTime as an ISO string ex. YYYY-MM-DDTHH:MM
+ * @param {String} content The message to send
+ */
+function addReminder(type, date, content){
+    config = configMan.readConfig();
+    reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
+    let dateNumber = Date.parse(date);
+    let reminder = {
+        "typeName":type,
+        "time":dateNumber,
+        "content":content
+    }
+
+    //add to 
+    if(!reminders.find(r=>{return (r.time==reminder.time&&r.content==reminder.content)}))reminders.push(reminder);
     //write to file
     fs.writeFileSync('./schedule.json', JSON.stringify({"reminders":reminders}));
 }
