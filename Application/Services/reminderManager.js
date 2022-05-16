@@ -287,8 +287,8 @@ function weeklySummary(client)
         {
             if(day.length > 0)message += "```fix\n" + new Date(Date.now()+((dayI)*86400000)).toLocaleDateString('en-US',{dateStyle:'full'}) + " ```\n";
             for(let r of day)
-            {
-                message += new Date(r.time).toLocaleTimeString('en-US',{timeStyle:"short", timeZone:'America/New_York'}) + ": " + r.typeName + " Study Group - " + r.content + "\n";
+            {//TODO: timezone management
+                message += new Date(r.time).toLocaleTimeString('en-US',{timeStyle:"short", timeZone:'America/New_York'}) + " EDT: " + r.typeName + " Study Group - " + r.content + "\n";
             }
         }
         
