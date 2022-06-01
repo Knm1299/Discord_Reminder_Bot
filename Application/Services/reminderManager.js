@@ -135,11 +135,12 @@ function setReminders(type,lineArr)
     {
         let date = Date.parse(line[0]);
         if(!date)continue;
-        let date1 = parseTime(date, line[1]);
-        let date2 = parseTime(date, line[4]);
-        let content1 = line[2];
-        let content2 = line[5];
+        let date1 = parseTime(date, "1pm");
+        let date2 = parseTime(date, "6pm");
+        let content1 = line[1];
+        let content2 = line[3];
         let link = config.regLinks[type];
+
 
         let reminder1 = {
             "typeName":type,
@@ -154,9 +155,9 @@ function setReminders(type,lineArr)
             "content":content2
         }
 
-        if(!reminders.find(r=>{return r.time==reminder1.time}))reminders.push(reminder1);  
+        if(content1 && !reminders.find(r=>{return r.time==reminder1.time}))reminders.push(reminder1);  
 
-        if(date2 && date2 != date && !reminders.find(r=>{return r.time==reminder2.time}))reminders.push(reminder2);
+        if(content2 && !reminders.find(r=>{return r.time==reminder2.time}))reminders.push(reminder2);
 
     }
     //write to file
