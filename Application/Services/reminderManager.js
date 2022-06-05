@@ -137,8 +137,8 @@ function setReminders(type,lineArr)
         if(!date)continue;
         let date1 = parseTime(date, "1pm");
         let date2 = parseTime(date, "6pm");
-        let content1 = line[1];
-        let content2 = line[3];
+        let content1 = line[2];
+        let content2 = line[4];
         let link = config.regLinks[type];
 
 
