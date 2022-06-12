@@ -73,18 +73,22 @@ function checkIn(client)
     const curTime = Date.now();
 
     
-    //trigger weekly announcement at 10AM Monday, feel free to make a pull req if you can improve this
+    //trigger weekly announcement at 10AM Monday
     let nowString = new Date(curTime).toLocaleString('en-US',{dateStyle:'full',timeStyle:'short',timeZone:'America/New_York'}).match(/(Monday)|(10:00 AM)/gi);
     let weeklyFlag =  nowString != null && nowString.length == 2;
     if(weeklyFlag) weeklySummary(client);
     
+    //trigger daily announcement in the same way
+    nowString = new Date(curTime).toLocaleString('en-US',{dateStyle:'full',timeStyle:'short',timeZone:'America/New_York'}).match(/(10:00 AM)/gi);
+    let dailyFlag =  nowString != null && nowString.length == 2;
+    if(dailyFlag) weeklySummary(client);
 
     //array of changes to prevent mutation issues
     let changes = [];
     
     //iterate through array, if reminder is due, post reminder and remove from array
     //if past due, remove from array and log
-    //TODO: you can't really leave this mess for others to have to look at
+    //TODO: cleanup, you can't really leave this mess for others to have to look at
     for(const [i,r] of reminders.entries())
     {
         if (r.time == null || curTime >= r.time)
