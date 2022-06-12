@@ -74,13 +74,12 @@ function checkIn(client)
 
     
     //trigger weekly announcement at 10AM Monday
-    let nowString = new Date(curTime).toLocaleString('en-US',{dateStyle:'full',timeStyle:'short',timeZone:'America/New_York'}).match(/(Monday)|(10:00 AM)/gi);
-    let weeklyFlag =  nowString != null && nowString.length == 2;
+    let nowString = new Date(curTime).toLocaleString('en-US',{dateStyle:'full',timeStyle:'short',timeZone:'America/New_York'});
+    let weeklyFlag =  nowString.match(/(Monday)|(10:00 AM)/gi) != null && nowString.match(/(Monday)|(10:00 AM)/gi).length == 2;
     if(weeklyFlag) weeklySummary(client);
     
-    //trigger daily announcement in the same way
-    nowString = new Date(curTime).toLocaleString('en-US',{dateStyle:'full',timeStyle:'short',timeZone:'America/New_York'}).match(/(10:00 AM)/gi);
-    let dailyFlag =  nowString != null && nowString.length == 2;
+    //trigger daily announcement in the same way, uses the same date object
+    let dailyFlag =  nowString.match(/(10:00 AM)/gi) != null && nowString.match(/(10:00 AM)/gi).length == 1;
     if(dailyFlag) weeklySummary(client);
 
     //array of changes to prevent mutation issues
