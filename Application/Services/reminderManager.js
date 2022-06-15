@@ -80,7 +80,7 @@ function checkIn(client)
     
     //trigger daily announcement in the same way, uses the same date object
     let dailyFlag =  nowString.match(/(10:00 AM)/gi) != null && nowString.match(/(10:00 AM)/gi).length == 1;
-    if(dailyFlag) weeklySummary(client);
+    if(dailyFlag) dailySummary(client);
 
     //array of changes to prevent mutation issues
     let changes = [];
