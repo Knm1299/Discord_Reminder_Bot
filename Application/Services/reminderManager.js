@@ -344,7 +344,7 @@ function dailySummary(client)
             message += new Date(r.time).toLocaleTimeString('en-US',{timeStyle:"short", timeZone:'America/New_York'}) + " EDT: " + r.typeName + " Study Group - " + r.content + "\n";
         }
         
-        message += "\nCheck out the #📖-study-group-links  channel to register or to view older study group videos.";
+        message += "\nCheck out the 📖-study-group-links channel to register or to view older study group videos.";
 
         //sending message
         client.channels.fetch(s).then(channel =>{
