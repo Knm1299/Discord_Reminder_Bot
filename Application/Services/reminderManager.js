@@ -159,7 +159,7 @@ function setReminders(type,lineArr)
         let content2 = line[4];
 
         let content3 = "Hi @everyone! As a reminder, today's RevUp orientation will be starting at " +  new Date(date3).toLocaleTimeString("en-US",{"timeStyle":"short","timeZone":'America/New_York'}) + " Eastern Time. " +
-        "\n" + 
+        "\n\n" + 
         "For new members, you should have received a link to register in your email, but if not, click this link to sign up for the webinar: https://revatu.re/revup-orientation";
 
         let link1 = config.regLinks[type];
