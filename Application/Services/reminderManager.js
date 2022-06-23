@@ -90,13 +90,13 @@ function checkIn(client)
     //TODO: cleanup, you can't really leave this mess for others to have to look at
     for(const [i,r] of reminders.entries())
     {
-        if (r.time == null || curTime >= r.time)
+        if (r.time == null || curTime >= r.time || r.advance === undefined)
         {
             console.debug("pruning entry at " + new Date());
             changes.push(i);
             continue;
         }
-        if(r.time - curTime <= config.timeInAdvance)
+        if(r.time - curTime <= r.advance)
         {
             for(const [channelId, channelObj] of Object.entries(config.channels))
             {
@@ -130,7 +130,13 @@ function checkIn(client)
     fs.writeFileSync('./schedule.json', JSON.stringify({"reminders":reminders}));
 }
 
-//Sets reminders in global array, also writes to file
+/**
+ * Parses a 2d array generated from the schedule CSV
+ * @param {String} type the config qualified name for the program(to be deprecated), must match a key for the regLinks object
+ * @param {String[]} lineArr the 2d array of lines to be parsed into reminders. <br>
+ * Each data line should follow the form: <br>
+ * Date , ignored , 1PM topic , ignored , 2PM topic , ignored , Orientation time
+ */
 function setReminders(type,lineArr)
 {
     reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
@@ -140,28 +146,37 @@ function setReminders(type,lineArr)
         if(!date)continue;
         let date1 = parseTime(date, "1pm");
         let date2 = parseTime(date, "6pm");
+        let date3 = parseTime(date, line[7]);//Orientation
         let content1 = line[2];
         let content2 = line[4];
-        let link = config.regLinks[type];
-
+        let link1 = config.regLinks[type];
+        let advance1 = config.timeInAdvance;//default advance for revUp reminders
+        let advance2 = 1000*60*60;//1HR for orientation reminders
 
         let reminder1 = {
             "typeName":type,
-            "link":link,
+            "link":link1,
             "time":date1,
-            "content":content1
+            "content":content1,
+            "advance":advance1
         }
         let reminder2 = {
             "typeName":type,
-            "link":link,
+            "link":link1,
             "time":date2,
-            "content":content2
+            "content":content2,
+            "advance":advance1
         }
 
-        if(content1 && !reminders.find(r=>{return r.time==reminder1.time}))reminders.push(reminder1);  
+        if(content1 && !reminders.find(r=>{return r.time==reminder1.time}))reminders.push(reminder1);
 
         if(content2 && !reminders.find(r=>{return r.time==reminder2.time}))reminders.push(reminder2);
 
+        if(content2 && !reminders.find(r=>{return r.time==date3}))addReminder(type, date3, advance2,
+            "Hi @everyone! As a reminder, today's RevUp orientation will be starting at " +  new Date(date3).toLocaleTimeString("en-US",{"timeStyle":"short","timeZone":'America/New_York'}) +
+            "\n" + 
+            "For new members, you should have received a link to register in your email, but if not, click this link to sign up for the webinar: https://revatu.re/revup-orientation"
+        );
     }
     //write to file
     fs.writeFileSync('./schedule.json', JSON.stringify({"reminders":reminders}));
@@ -171,16 +186,18 @@ function setReminders(type,lineArr)
  * Schedules a reminder with custom content, doesn't use regular "Dont forget!" format
  * @param {String} type The groupname for sending the reminder out
  * @param {String} date The dateTime as an ISO string ex. YYYY-MM-DDTHH:MM
+ * @param {Number} advance The time in advance to send the reminder, relative to date
  * @param {String} content The message to send
  */
-function addReminder(type, date, content){
+function addReminder(type, date, advance, content){
     config = configMan.readConfig();
     reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
     let dateNumber = Date.parse(date);
     let reminder = {
         "typeName":type,
         "time":dateNumber,
-        "content":content
+        "content":content,
+        "advance":advance
     }
 
     //add to 
