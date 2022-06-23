@@ -90,7 +90,7 @@ function checkIn(client)
     //TODO: cleanup, you can't really leave this mess for others to have to look at
     for(const [i,r] of reminders.entries())
     {
-        if (r.time == null || curTime >= r.time || r.advance === undefined)
+        if (r.time == null || curTime >= r.time)
         {
             console.debug("pruning entry at " + new Date());
             changes.push(i);
@@ -100,7 +100,15 @@ function checkIn(client)
         {
             for(const [channelId, channelObj] of Object.entries(config.channels))
             {
-                if(!channelObj[r.typeName].individuals)continue;
+                if(!channelObj[r.typeName].individuals){
+                    if(!channelObj[r.typeName].orientation)continue;
+                    else{
+                        client.channels.fetch(channelId).then(foundChannel =>{
+                            foundChannel.send(r.content).catch(console.error);
+                        }).catch(console.error);
+                        continue;
+                    }
+                }
                 if(channelObj.blacklist.includes(r.content.toUpperCase()))continue;
                 console.debug("Reminder posting at: " + new Date());
                 client.channels.fetch(channelId).then(foundChannel =>{
@@ -149,6 +157,11 @@ function setReminders(type,lineArr)
         let date3 = parseTime(date, line[7]);//Orientation
         let content1 = line[2];
         let content2 = line[4];
+
+        let content3 = "Hi @everyone! As a reminder, today's RevUp orientation will be starting at " +  new Date(date3).toLocaleTimeString("en-US",{"timeStyle":"short","timeZone":'America/New_York'}) +
+        "\n" + 
+        "For new members, you should have received a link to register in your email, but if not, click this link to sign up for the webinar: https://revatu.re/revup-orientation";
+
         let link1 = config.regLinks[type];
         let advance1 = config.timeInAdvance;//default advance for revUp reminders
         let advance2 = 1000*60*60;//1HR for orientation reminders
@@ -167,16 +180,18 @@ function setReminders(type,lineArr)
             "content":content2,
             "advance":advance1
         }
+        let orientation = {
+            "typeName":type,
+            "time":date3,
+            "content":content3,
+            "advance":advance2
+        }
 
         if(content1 && !reminders.find(r=>{return r.time==reminder1.time}))reminders.push(reminder1);
 
         if(content2 && !reminders.find(r=>{return r.time==reminder2.time}))reminders.push(reminder2);
 
-        if(content2 && !reminders.find(r=>{return r.time==date3}))addReminder(type, date3, advance2,
-            "Hi @everyone! As a reminder, today's RevUp orientation will be starting at " +  new Date(date3).toLocaleTimeString("en-US",{"timeStyle":"short","timeZone":'America/New_York'}) +
-            "\n" + 
-            "For new members, you should have received a link to register in your email, but if not, click this link to sign up for the webinar: https://revatu.re/revup-orientation"
-        );
+        if(content2 && !reminders.find(r=>{return r.time==date3}))reminders.push(orientation);
     }
     //write to file
     fs.writeFileSync('./schedule.json', JSON.stringify({"reminders":reminders}));
