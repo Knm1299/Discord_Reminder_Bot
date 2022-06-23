@@ -130,10 +130,9 @@ function checkIn(client)
     fs.writeFileSync('./schedule.json', JSON.stringify({"reminders":reminders}));
 }
 
-//Sets reminders in local array, also writes to file
+//Sets reminders in global array, also writes to file
 function setReminders(type,lineArr)
 {
-    //loading reminders to account for more ways to add them
     reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
     for(line of lineArr)
     {
@@ -252,6 +251,7 @@ function weeklySummary(client)
         {
             if(!channelObj[r.typeName].weeklies)continue;
             if(channelObj.blacklist.includes(r.content.toUpperCase()))continue;
+            if(!r.link)continue;
             (weeklies.hasOwnProperty(channelId))? weeklies[channelId].push(r) : weeklies[channelId] = [r];
         }
     }
@@ -326,6 +326,7 @@ function dailySummary(client)
         {
             if(!channelObj[r.typeName].dailies)continue;
             if(channelObj.blacklist.includes(r.content.toUpperCase()))continue;
+            if(!r.link)continue;
             (dailies.hasOwnProperty(channelId))? dailies[channelId].push(r) : dailies[channelId] = [r];
         }
     }
