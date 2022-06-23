@@ -24,9 +24,14 @@ module.exports = {
     .addStringOption(option=>
         option.setName('contents')
             .setDescription('the contents of the reminder to be scheduled')
-            .setRequired(true)),
+            .setRequired(true))
+    .addStringOption(option=>
+        option.setName('advance')
+            .setDescription('the number of millis in advance to fire the reminder')
+            .setRequired(false)),
     async execute(interaction){
-        addReminder(interaction.options.data[0].value,interaction.options.data[1].value,interaction.options.data[2].value);
+        let advance = interaction.options.data[3].value ? interaction.options.data[3].value : config.timeInAdvance;
+        addReminder(interaction.options.data[0].value, interaction.options.data[1].value, advance, interaction.options.data[2].value);
         interaction.reply({content:'Reminder scheduled successfully', ephemeral:true});
     }
 }

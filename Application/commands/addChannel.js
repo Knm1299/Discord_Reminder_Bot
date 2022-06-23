@@ -29,6 +29,10 @@ module.exports = {
     .addBooleanOption(option=>
         option.setName('dailies')
         .setDescription('Whether or not to post daily schedules')
+        .setRequired(true))
+    .addBooleanOption(option=>
+        option.setName('orientations')
+        .setDescription('Whether or not to post orientation reminders')
         .setRequired(true)),
     async execute(interaction){
         let config = configMan.readConfig();
@@ -44,6 +48,7 @@ module.exports = {
                                 boolean individuals
                                 boolean weeklies
                                 boolean dailies
+                                boolean orientation
                             },
                             blacklist = []
                         }
@@ -56,7 +61,8 @@ module.exports = {
             config.channels[interaction.channelId][interaction.options.data[0].value] = {
                 individuals: interaction.options.data[1].value,
                 weeklies : interaction.options.data[2].value,
-                dailies : interaction.options.data[3].value
+                dailies : interaction.options.data[3].value,
+                orientation : interaction.options.data[4].value
             };
             if(!config.channels[interaction.channelId].hasOwnProperty('blacklist'))config.channels[interaction.channelId].blacklist = [];
             configMan.writeConfig(config);
