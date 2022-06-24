@@ -101,6 +101,15 @@ function checkIn(client)
             for(const [channelId, channelObj] of Object.entries(config.channels))
             {
                 if(!channelObj[r.typeName].individuals){
+                    if(!channelObj[r.typeName].orientation || !r.content.includes("today's RevUp orientation"))continue;
+                    else{
+                        client.channels.fetch(channelId).then(foundChannel =>{
+                            foundChannel.send(r.content).catch(console.error);
+                        }).catch(console.error);
+                        continue;
+                    }
+                }
+                if(r.content.contains("today's RevUp orientation")){
                     if(!channelObj[r.typeName].orientation)continue;
                     else{
                         client.channels.fetch(channelId).then(foundChannel =>{
