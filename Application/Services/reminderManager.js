@@ -75,7 +75,7 @@ function checkIn(client)
     
     //trigger weekly announcement at 10AM Monday
     let nowString = new Date(curTime).toLocaleString('en-US',{dateStyle:'full',timeStyle:'short',timeZone:'America/New_York'});
-    let weeklyFlag =  nowString.match(/(Monday)|(10:00 AM)/gi) != null && nowString.match(/(Monday)|(10:00 AM)/gi).length == 2;
+    let weeklyFlag =  nowString.match(/(Friday)|(6:01 PM)/gi) != null && nowString.match(/(Friday)|(6:01 PM)/gi).length == 2;
     if(weeklyFlag) weeklySummary(client);
     
     //trigger daily announcement in the same way, uses the same date object
@@ -109,7 +109,7 @@ function checkIn(client)
                         continue;
                     }
                 }
-                if(r.content.contains("today's RevUp orientation")){
+                if(r.content.includes("today's RevUp orientation")){
                     if(!channelObj[r.typeName].orientation)continue;
                     else{
                         client.channels.fetch(channelId).then(foundChannel =>{
