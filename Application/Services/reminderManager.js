@@ -276,8 +276,9 @@ function parseTime(date, time)
  * Sends weekly summary to each registered channel with all pertinent reminders
  * 
  * @param {Client}client the client object to send the message with
+ * @param {Boolean}[includeToday] whether or not to include reminders from earlier today, switches before/after work posting, true being before
  * **/
-function weeklySummary(client)
+function weeklySummary(client, includeToday)
 {
     //reload config
     config = configMan.config;
@@ -304,7 +305,11 @@ function weeklySummary(client)
         rs.sort((a,b)=>{return(a.time - b.time);})
         
         //message header
-        let message = "@everyone All study groups for the week of: " + new Date().toLocaleDateString('en-US',{dateStyle:"full"}) + ": \n";
+        let message = "@everyone All study groups for the week following " + new Date().toLocaleDateString('en-US',{dateStyle:"full"}) + ": \n";
+
+        //temp date to check from last midnight, includes ones earlier today, excludes 7 days from now
+        let tempDate = new Date();
+        includeToday?tempDate.setHours(0,0,0,0):null;
 
         let days = [[],[],[],[],[],[],[]];
         for(let day = 1; day < 8;  day++)
@@ -313,9 +318,7 @@ function weeklySummary(client)
             let changes = [];
             for(let [i,r] of rs.entries())
             {
-                //temp date to check from last midnight
-                let tempDate = new Date();
-                tempDate.setHours(0,0,0,0);
+                
                 if(r.time-(day*86400000) < tempDate.getTime())
                 {
                     days[day-1].push(r);
@@ -331,7 +334,7 @@ function weeklySummary(client)
 
         for(let [dayI, day] of days.entries())
         {
-            if(day.length > 0)message += "```fix\n" + new Date(Date.now()+((dayI)*86400000)).toLocaleDateString('en-US',{dateStyle:'full'}) + " ```\n";
+            if(day.length > 0)message += "```fix\n" + new Date(tempDate.getTime()+((dayI + (includeToday?0:1))*86400000)).toLocaleDateString('en-US',{dateStyle:'full'}) + " ```\n";
             for(let r of day)
             {//TODO: timezone management
                 message += new Date(r.time).toLocaleTimeString('en-US',{timeStyle:"short", timeZone:'America/New_York'}) + " EDT: " + r.typeName + " Study Group - " + r.content + "\n";
