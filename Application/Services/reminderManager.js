@@ -1,4 +1,4 @@
-const {Client, Collection} = require('discord.js');
+const {Client} = require('discord.js');
 const dotenv = require('dotenv');
 const https = require('https');
 const fs = require('node:fs');
@@ -16,7 +16,7 @@ module.exports = {
     addReminder
 }
 
-//array to hold active reminders TODO: move this literally anywhere but top level
+//array to hold active reminders TODO: move this literally anywhere but top level nvm it's *fine*
 let reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
 
 /**
@@ -25,8 +25,7 @@ let reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
  * @param {String} type Name of the program the reminder belongs to
  * @param {Message} message the message object to parse
  */
-function parseMessage(type, message)
-{
+function parseMessage(type, message){
     console.log("Set Reminders: ");
     let csv = message.attachments.first();
     if(!csv)return;
@@ -60,8 +59,7 @@ function parseMessage(type, message)
  * 
  * @param {Client} client the active client to send the message with
  */
-function checkIn(client)
-{
+function checkIn(client){
     //loading reminders to account for more ways to add them
     reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
     //checking if reminders are active before continuing
@@ -154,8 +152,7 @@ function checkIn(client)
  * Each data line should follow the form: <br>
  * Date , ignored , 1PM topic , ignored , 2PM topic , ignored , Orientation time
  */
-function setReminders(type,lineArr)
-{
+function setReminders(type,lineArr){
     reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
     for(line of lineArr)
     {
@@ -254,8 +251,7 @@ const csvStringToArray = strData =>{
     @param {Date}date date object to set time of
     @param {string}time string starting with hh:mm PM/AM, minutes are optional, case insensitive
 **/
-function parseTime(date, time)
-{
+function parseTime(date, time){
     if(!time)return null;
     //parses time from string like 1pm
     time = time.split(" ")[0];
@@ -278,8 +274,7 @@ function parseTime(date, time)
  * @param {Client}client the client object to send the message with
  * @param {Boolean}[includeToday] whether or not to include reminders from earlier today, switches before/after work posting, true being before
  * **/
-function weeklySummary(client, includeToday)
-{
+function weeklySummary(client, includeToday){
     //reload config
     config = configMan.config;
     let weeklies = {};
@@ -355,8 +350,7 @@ function weeklySummary(client, includeToday)
  * 
  * @param {Client} client the client object to send the message with
  */
-function dailySummary(client)
-{
+function dailySummary(client){
     //reload config
     config = configMan.config;
     let dailies = {};
