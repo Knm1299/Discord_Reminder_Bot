@@ -71,7 +71,7 @@ function checkIn(client){
     const curTime = Date.now();
 
     
-    //trigger weekly announcement at 10AM Monday
+    //trigger weekly announcement at 6:01 PM Eastern Friday
     let nowString = new Date(curTime).toLocaleString('en-US',{dateStyle:'full',timeStyle:'short',timeZone:'America/New_York'});
     let weeklyFlag =  nowString.match(/(Friday)|(6:01 PM)/gi) != null && nowString.match(/(Friday)|(6:01 PM)/gi).length == 2;
     if(weeklyFlag) weeklySummary(client);

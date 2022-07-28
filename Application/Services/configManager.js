@@ -1,5 +1,3 @@
-//WIP NOT IMPLEMENTED
-
 const fs = require('node:fs');
 
 module.exports = class configMan{
