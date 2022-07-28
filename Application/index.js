@@ -1,6 +1,7 @@
 const fs = require('node:fs');
 const { Client, Collection, Intents } = require('discord.js');
-const { parseMessage, checkIn } = require('./services/reminderManager.js');
+const { checkIn } = require('./services/reminderManager.js');
+const { parseMessage } = require('./Services/reminderHelpers.js');
 const dotenv = require('dotenv');
 
 //dotenv config for gitignored constants

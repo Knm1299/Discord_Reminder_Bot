@@ -1,5 +1,5 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
-const { addReminder } = require('../Services/reminderManager');
+const { addReminder } = require('../Services/reminderHelpers');
 const configMan = require('../services/configManager');
 
 let config = configMan.config;
