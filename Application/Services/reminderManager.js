@@ -22,10 +22,9 @@ let reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
 /**
  * Parses a message that consists of a command phrase and a csv with the schedule to set
  * 
- * @param {String} type Name of the program the reminder belongs to
  * @param {Message} message the message object to parse
  */
-function parseMessage(type, message){
+function parseMessage(message){
     console.log("Set Reminders: ");
     let csv = message.attachments.first();
     if(!csv)return;
@@ -42,7 +41,7 @@ function parseMessage(type, message){
         res.on('end',()=>{
             if(res.complete){
                 csvArr = csvStringToArray(fullString);
-                setRevUpReminders(type, csvArr);
+                setRevUpReminders(csvArr);
             }
         })
     })
@@ -146,7 +145,7 @@ function checkIn(client){
 }
 
 /**
- * Parses a 2d array generated from the schedule CSV
+ * Parses a 2d array generated from the schedule CSV to set RevUp's 1PM and 6PM reminders, as well as orientation reminders
  * @param {String[]} lineArr the 2d array of lines to be parsed into reminders. <br>
  * Each data line should follow the form: <br>
  * Date , ignored , 1PM topic , ignored , 2PM topic , ignored , Orientation time
