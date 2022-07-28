@@ -20,8 +20,7 @@ for (const file of commandFiles) {
 }
 
 //keyword to identify message with csv payload
-const keyphraseRevUP = "RB SET SCHEDULE REVUP";
-const keyphraseRAP = "RB SET SCHEDULE RAP";
+const keyphrase = "RB SET SCHEDULE CSV";
 
 // When the client is ready, run this code (only once)
 client.once('ready', () => {
@@ -46,14 +45,10 @@ client.on('interactionCreate', async interaction => {
 
 
 //Message interaction for catching keyphrase and setting reminders
-//NOTE: only good for RevUP or RAP due to unreliable formatting, could include a column for study group type to help
 client.on('messageCreate', async message => {
-    if(message.content.toUpperCase().includes(keyphraseRevUP)){
+    if(message.content.toUpperCase().includes(keyphrase)){
         console.log("ready for csv");
-        parseMessage("RevUP", message);
-    }else if(message.content.toUpperCase().includes(keyphraseRAP)){
-        console.log("ready for csv");
-        parseMessage("RAP", message);
+        parseMessage(message);
     }
 });
 

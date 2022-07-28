@@ -42,7 +42,7 @@ function parseMessage(type, message){
         res.on('end',()=>{
             if(res.complete){
                 csvArr = csvStringToArray(fullString);
-                setReminders(type, csvArr);
+                setRevUpReminders(type, csvArr);
             }
         })
     })
@@ -147,12 +147,11 @@ function checkIn(client){
 
 /**
  * Parses a 2d array generated from the schedule CSV
- * @param {String} type the config qualified name for the program(to be deprecated), must match a key for the regLinks object
  * @param {String[]} lineArr the 2d array of lines to be parsed into reminders. <br>
  * Each data line should follow the form: <br>
  * Date , ignored , 1PM topic , ignored , 2PM topic , ignored , Orientation time
  */
-function setReminders(type,lineArr){
+function setRevUpReminders(lineArr){
     reminders = JSON.parse(fs.readFileSync('./schedule.json')).reminders;
     for(line of lineArr)
     {
@@ -168,26 +167,26 @@ function setReminders(type,lineArr){
         "\n\n" + 
         "For new members, you should have received a link to register in your email, but if not, click this link to sign up for the webinar: https://revatu.re/revup-orientation";
 
-        let link1 = config.regLinks[type];
+        let revUpLink = config.regLinks.RevUP;
         let advance1 = config.timeInAdvance;//default advance for revUp reminders
         let advance2 = 1000*60*60;//1HR for orientation reminders
 
         let reminder1 = {
-            "typeName":type,
-            "link":link1,
+            "typeName":"RevUP",
+            "link":revUpLink,
             "time":date1,
             "content":content1,
             "advance":advance1
         }
         let reminder2 = {
-            "typeName":type,
-            "link":link1,
+            "typeName":"RevUP",
+            "link":revUpLink,
             "time":date2,
             "content":content2,
             "advance":advance1
         }
         let orientation = {
-            "typeName":type,
+            "typeName":"RevUP",
             "time":date3,
             "content":content3,
             "advance":advance2
