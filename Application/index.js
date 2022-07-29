@@ -4,7 +4,7 @@ const { checkIn } = require('./services/reminderManager.js');
 const { parseMessage } = require('./Services/reminderHelpers.js');
 const dotenv = require('dotenv');
 
-//dotenv config for gitignored constants
+//dotenv config for the bot's token
 dotenv.config();
 
 // Create a new client instance
