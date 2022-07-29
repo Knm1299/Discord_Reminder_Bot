@@ -239,3 +239,13 @@ function dailySummary(client){
 
     }
 }
+
+/*
+@everyone Please fill out the weekly survey so we can improve Spark! Here’s the link: https://revatu.re/spark-weekly-feedback-survey. 
+\n\n
+If you complete the survey and enter your email, you will be entered in a raffle to win a $10 Amazon gift card. There are 4 weekly surveys and one post-Spark survey you can complete, so you can be entered into the raffle at most 5 times during Spark.
+*/
+/*
+@everyone Check your current progress here: https://res.revatu.re/progress
+\n This data is updated every 4 hours
+*/
