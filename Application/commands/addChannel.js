@@ -33,6 +33,14 @@ module.exports = {
     .addBooleanOption(option=>
         option.setName('orientations')
         .setDescription('Whether or not to post orientation reminders')
+        .setRequired(true))
+    .addBooleanOption(option=>
+        option.setName('checkProgress')
+        .setDescription('Whether or not to post progress check reminders')
+        .setRequired(true))
+    .addBooleanOption(option=>
+        option.setName('sparkSurvey')
+        .setDescription('Whether or not to post weekly spark survey reminders')
         .setRequired(true)),
     async execute(interaction){
         let config = configMan.readConfig();
@@ -49,6 +57,8 @@ module.exports = {
                                 boolean weeklies
                                 boolean dailies
                                 boolean orientation
+                                boolean checkProgress
+                                boolean sparkSurvey
                             },
                             blacklist = []
                         }
@@ -62,7 +72,9 @@ module.exports = {
                 individuals: interaction.options.data[1].value,
                 weeklies : interaction.options.data[2].value,
                 dailies : interaction.options.data[3].value,
-                orientation : interaction.options.data[4].value
+                orientation : interaction.options.data[4].value,
+                checkProgress : interaction.options.data[5].value,
+                sparkSurvey : interaction.options.data[6].value
             };
             if(!config.channels[interaction.channelId].hasOwnProperty('blacklist'))config.channels[interaction.channelId].blacklist = [];
             configMan.writeConfig(config);
